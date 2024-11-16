@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Практическая работа по разделу 3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f0f0f5;
+      color: #333;
+    }
+    h1, h3 {
+      text-align: center;
+      color: #444;
+    }
+    .section {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 800px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    input[type="range"] {
+      width: 150px;
+    }
+    canvas {
+      display: block;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    input[type="file"] {
+      margin: 10px 0;
+    }
+    .output-button {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Практическая работа по разделу 3</h1>
+
+  <!-- Аудио -->
+  <div class="section">
+    <h3>Аудиоплеер</h3>
+    <audio id="audioPlayer" controls>
+      <source src="./media/TopTrack.mp3" type="audio/mpeg">
+      Ваш браузер не поддерживает аудио.
+    </audio>
+    <div class="controls">
+      <button onclick="playAudio()">▶️ Воспроизвести</button>
+      <button onclick="pauseAudio()">⏸️ Пауза</button>
+      <label>
+        Громкость:
+        <input type="range" id="audioVolume" min="0" max="1" step="0.1" onchange="setAudioVolume()">
+      </label>
+    </div>
+  </div>
+
+  <!-- Видео -->
+  <div class="section">
+    <h3>Видеоплеер</h3>
+    <video id="videoPlayer" width="100%" controls>
+      <source src="./media/IMG_8367.MP4" type="video/mp4">
+      Ваш браузер не поддерживает видео.
+    </video>
+    <div class="controls">
+      <button onclick="playVideo()">▶️ Воспроизвести</button>
+      <button onclick="pauseVideo()">⏸️ Пауза</button>
+      <label>
+        Громкость:
+        <input type="range" id="videoVolume" min="0" max="1" step="0.1" onchange="setVideoVolume()">
+      </label>
+    </div>
+  </div>
+
+  <!-- Графика и анимация -->
+  <div class="section">
+    <h3>Графика и анимация</h3>
+    <canvas id="canvas" width="600" height="300"></canvas>
+  </div>
+
+  <!-- Обработка изображений -->
+  <div class="section">
+    <h3>Обработка изображений</h3>
+    <input type="file" id="imageLoader" accept="image/*">
+    <canvas id="imageCanvas" width="600" height="300"></canvas>
+    <div class="output-button">
+      <button onclick="applyGrayFilter()">Применить фильтр</button>
+      <button onclick="downloadImage()">Скачать изображение</button>
+    </div>
+  </div>
+
+  <script>
+    // Аудио управление
+    const audioPlayer = document.getElementById('audioPlayer');
+    function playAudio() {
+      audioPlayer.play();
+    }
+    function pauseAudio() {
+      audioPlayer.pause();
+    }
+    function setAudioVolume() {
+      audioPlayer.volume = document.getElementById('audioVolume').value;
+    }
+
+    // Видео управление
+    const videoPlayer = document.getElementById('videoPlayer');
+    function playVideo() {
+      videoPlayer.play();
+    }
+    function pauseVideo() {
+      videoPlayer.pause();
+    }
+    function setVideoVolume() {
+      videoPlayer.volume = document.getElementById('videoVolume').value;
+    }
+
+    // Анимация
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let x = 0, y = 150, dx = 4;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fillStyle = 'blue';
+      ctx.fill();
+      ctx.closePath();
+
+      x += dx;
+      if (x > canvas.width || x < 0) dx = -dx;
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    // Обработка изображений
+    const imageLoader = document.getElementById('imageLoader');
+    const imageCanvas = document.getElementById('imageCanvas');
+    const imageCtx = imageCanvas.getContext('2d');
+    let img = new Image();
+
+    imageLoader.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    img.onload = () => {
+      imageCtx.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
+    };
+
+    function applyGrayFilter() {
+      const imageData = imageCtx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        data[i] = data[i + 1] = data[i + 2] = avg;
+      }
+      imageCtx.putImageData(imageData, 0, 0);
+    }
+
+    function downloadImage() {
+      const link = document.createElement('a');
+      link.download = 'processed_image.png';
+      link.href = imageCanvas.toDataURL();
+      link.click();
+    }
+  </script>
+</body>
+</html>
